@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres:postgres@postgres/app" // hardcoded because it's an internal docker connection
+}
+
+model ProductIdea {
+  id          String   @id @default(cuid())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  // User input
+  title       String
+  description String
+  targetMarket String?
+  
+  // AI validation result
+  validation  ValidationResult?
+  
+  @@map("product_ideas")
+}
+
+model ValidationResult {
+  id            String   @id @default(cuid())
+  createdAt     DateTime @default(now())
+  
+  productIdeaId String   @unique
+  productIdea   ProductIdea @relation(fields: [productIdeaId], references: [id], onDelete: Cascade)
+  
+  // Structured AI analysis
+  userAnalysis  Json     // Target users, personas, user journey
+  painPoints    Json     // Problems being solved, pain severity
+  features      Json     // Core features, prioritization
+  risks         Json     // Technical, market, business risks
+  metrics       Json     // Success metrics, KPIs
+  marketAnalysis Json    // Competition, market size, validation steps
+  
+  // Overall assessment
+  viabilityScore Int     // 1-10 score
+  recommendation String  // AI recommendation
+  nextSteps     Json     // Suggested action items
+  
+  @@map("validation_results")
+}
